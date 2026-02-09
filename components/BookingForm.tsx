@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LawnType, ServiceType, LandCategory, BookingFormData } from '../types';
-import { CalendarCheck, Loader2, Users, AlertCircle } from 'lucide-react';
+import { CalendarCheck, Loader2, AlertCircle } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 
 interface BookingFormProps {
@@ -54,11 +54,11 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
     setIsSubmitting(true);
     setErrorMsg(null);
 
-    // Tes clés EmailJS configurées
     const SERVICE_ID = 'service_1sjow9s';
     const TEMPLATE_ID = 'template_59eay7o';
     const PUBLIC_KEY = 'u6N8LATJ1y9hnE259';
 
+    // Formatage des données pour faciliter l'export Excel (clés v_... demandées)
     const templateParams = {
       to_name: "Admin Altea",
       client_name: formData.name,
@@ -68,12 +68,12 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
       lawn_type: formData.lawnType === 'detache' ? 'Maison Détachée' : 'Jumelé / Ville',
       land_category: formData.landCategory === 'standard' ? 'Standard' : 'Grand/Boisé',
       service_type: formData.serviceType,
-      is_duo: formData.isDuoVoisin ? 'OUI - Duo Voisin activé' : 'Non',
-      neighbor_name: formData.neighborInfo?.name || '-',
-      neighbor_address: formData.neighborInfo?.address || '-',
-      neighbor_phone: formData.neighborInfo?.phone || '-',
-      neighbor_email: formData.neighborInfo?.email || '-',
-      client_comment: formData.comment || 'Aucun commentaire'
+      is_duo: formData.isDuoVoisin ? 'OUI' : 'Non',
+      v_nom: formData.isDuoVoisin ? formData.neighborInfo?.name : '-',
+      v_adr: formData.isDuoVoisin ? formData.neighborInfo?.address : '-',
+      v_tel: formData.isDuoVoisin ? formData.neighborInfo?.phone : '-',
+      v_mail: formData.isDuoVoisin ? formData.neighborInfo?.email : '-',
+      commentaire: formData.comment || 'Aucun'
     };
 
     try {
@@ -96,7 +96,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
           </div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Demande Reçue !</h2>
           <p className="text-gray-600 dark:text-gray-300 text-lg">
-            Merci {formData.name}. Notre équipe a bien reçu votre demande et vous contactera sous 24h.
+            Merci {formData.name}. Notre équipe a bien reçu votre demande et vous contactera sous 24h pour confirmer le tout.
           </p>
           <button 
             onClick={() => setIsSuccess(false)}
@@ -117,7 +117,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
             Vérifier la disponibilité
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            Les places sont limitées par secteur. Bloquez la vôtre maintenant.
+            Les places sont limitées par secteur. Bloquez la vôtre maintenant pour la saison.
           </p>
         </div>
 
@@ -129,7 +129,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
                 type="text" required value={formData.name}
                 onChange={e => setFormData({...formData, name: e.target.value})}
                 className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none"
-                placeholder="Jean Tremblay"
+                placeholder="Ex: Jean Tremblay"
               />
             </div>
             <div className="space-y-2">
@@ -138,7 +138,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
                 type="tel" required value={formData.phone}
                 onChange={e => setFormData({...formData, phone: e.target.value})}
                 className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none"
-                placeholder="(514) 555-0123"
+                placeholder="(418) 555-0123"
               />
             </div>
           </div>
@@ -159,7 +159,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
               type="email" required value={formData.email}
               onChange={e => setFormData({...formData, email: e.target.value})}
               className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none"
-              placeholder="jean@exemple.com"
+              placeholder="votre@courriel.com"
             />
           </div>
 
@@ -207,21 +207,45 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
             </div>
 
             {formData.isDuoVoisin && (
-              <div className="mt-6 grid md:grid-cols-2 gap-4">
+              <div className="mt-6 grid md:grid-cols-2 gap-4 animate-fade-in">
                 <input 
                   placeholder="Nom du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.name}
                   onChange={e => handleNeighborChange('name', e.target.value)}
-                  className="px-4 py-2 rounded-lg bg-white dark:bg-[#111] border border-gray-200 text-sm outline-none"
+                  className="px-4 py-2.5 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
                 />
                 <input 
                   placeholder="Adresse du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.address}
                   onChange={e => handleNeighborChange('address', e.target.value)}
-                  className="px-4 py-2 rounded-lg bg-white dark:bg-[#111] border border-gray-200 text-sm outline-none"
+                  className="px-4 py-2.5 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
+                />
+                <input 
+                  type="tel"
+                  placeholder="Téléphone du voisin" required={formData.isDuoVoisin}
+                  value={formData.neighborInfo?.phone}
+                  onChange={e => handleNeighborChange('phone', e.target.value)}
+                  className="px-4 py-2.5 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
+                />
+                <input 
+                  type="email"
+                  placeholder="Courriel du voisin" required={formData.isDuoVoisin}
+                  value={formData.neighborInfo?.email}
+                  onChange={e => handleNeighborChange('email', e.target.value)}
+                  className="px-4 py-2.5 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
                 />
               </div>
             )}
+          </div>
+
+          <div className="space-y-2 mb-8">
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Commentaire (optionnel)</label>
+            <textarea 
+              value={formData.comment}
+              onChange={e => setFormData({...formData, comment: e.target.value})}
+              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none min-h-[100px]"
+              placeholder="Informations supplémentaires sur votre terrain..."
+            />
           </div>
 
           {errorMsg && (
@@ -233,7 +257,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
 
           <button 
             type="submit" disabled={isSubmitting}
-            className="w-full py-4 bg-altea-green hover:bg-altea-greenDark text-white font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 text-lg disabled:opacity-70"
+            className="w-full py-4 bg-altea-green hover:bg-altea-greenDark text-white font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 text-lg transition-transform active:scale-95 disabled:opacity-70"
           >
             {isSubmitting ? <Loader2 className="animate-spin" /> : "BLOQUER MA PLACE"}
           </button>
