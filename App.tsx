@@ -8,18 +8,13 @@ import Footer from './components/Footer.tsx';
 import { LawnType, ServiceType } from './types.ts';
 
 const App: React.FC = () => {
+  // Le mode clair est maintenant explicitement la valeur par défaut (false)
   const [isDark, setIsDark] = useState<boolean>(false);
   const [selectedLawnType, setSelectedLawnType] = useState<LawnType>('detache');
   const [selectedServiceType, setSelectedServiceType] = useState<ServiceType>('tonte');
 
   useEffect(() => {
-    // Initialiser le thème au chargement basé sur les préférences système
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setIsDark(true);
-    }
-  }, []);
-
-  useEffect(() => {
+    // Mise à jour de la classe sur l'élément racine HTML quand isDark change
     if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
