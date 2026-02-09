@@ -8,13 +8,11 @@ import Footer from './components/Footer.tsx';
 import { LawnType, ServiceType } from './types.ts';
 
 const App: React.FC = () => {
-  // Le mode clair est maintenant explicitement la valeur par défaut (false)
   const [isDark, setIsDark] = useState<boolean>(false);
   const [selectedLawnType, setSelectedLawnType] = useState<LawnType>('detache');
   const [selectedServiceType, setSelectedServiceType] = useState<ServiceType>('tonte');
 
   useEffect(() => {
-    // Mise à jour de la classe sur l'élément racine HTML quand isDark change
     if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
@@ -36,16 +34,11 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-[#111111] transition-colors duration-300 font-sans selection:bg-altea-green selection:text-white">
       
-      {/* Bannière de Promotion Mobile-Responsive */}
-      <div className="bg-emerald-900 text-white text-center py-2.5 px-4 text-xs md:text-sm font-semibold tracking-wide z-[60] relative">
-        <span className="hidden sm:inline">OFFRE EXCLUSIVE : </span>
-        PROMO LÈVE-TÔT — <span className="text-altea-green font-bold">10% DE RABAIS</span> AVANT LE 15 AVRIL.
-      </div>
-
+      {/* NavBar is sticky and pushes the Hero down */}
       <NavBar isDark={isDark} toggleTheme={toggleTheme} />
 
-      {/* Hero Section avec Fallback Image Robustes */}
-      <section id="hero" className="relative h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden">
+      {/* Hero Section: Correct background image used with high readability overlay */}
+      <section id="hero" className="relative h-[80vh] min-h-[550px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img 
             src="/fond-herbe.jpg" 
@@ -53,19 +46,18 @@ const App: React.FC = () => {
             className="w-full h-full object-cover"
             loading="eager"
             onError={(e) => {
-              // Fallback vers une image haute qualité si le fichier local est absent
               (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1558449028-b53a39d100fc?q=80&w=2000&auto=format&fit=crop";
             }}
           />
-          {/* Overlay Multi-couches pour lisibilité texte maximale */}
-          <div className="absolute inset-0 bg-black/40"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-transparent to-black/30"></div>
+          {/* Enhanced readability overlay: Darkening the image to make white text pop */}
+          <div className="absolute inset-0 bg-black/45"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-black/30"></div>
         </div>
 
-        <div className="relative z-10 text-center max-w-5xl px-6 mt-16 animate-fade-in-up">
+        <div className="relative z-10 text-center max-w-5xl px-6 animate-fade-in-up">
           <div className="flex items-center justify-center gap-1 mb-6">
-            {[1,2,3,4,5].map(i => <Star key={i} size={18} className="text-altea-green fill-altea-green shadow-sm" />)}
-            <span className="text-white text-[10px] md:text-xs font-black ml-3 tracking-[0.2em] uppercase bg-black/20 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10">
+            {[1,2,3,4,5].map(i => <Star key={i} size={18} className="text-altea-green fill-altea-green drop-shadow" />)}
+            <span className="text-white text-[10px] md:text-xs font-black ml-3 tracking-[0.2em] uppercase bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
               Service 5 Étoiles au Québec
             </span>
           </div>
