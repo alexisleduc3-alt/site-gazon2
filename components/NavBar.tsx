@@ -22,121 +22,95 @@ const NavBar: React.FC<NavBarProps> = ({ isDark, toggleTheme }) => {
     setMobileMenuOpen(false);
     const element = document.getElementById(id);
     if (element) {
-      const offset = 100; // Adjusted for sticky header
-      const bodyRect = document.body.getBoundingClientRect().top;
-      const elementRect = element.getBoundingClientRect().top;
-      const elementPosition = elementRect - bodyRect;
-      const offsetPosition = elementPosition - offset;
-
       window.scrollTo({
-        top: offsetPosition,
+        top: element.getBoundingClientRect().top + window.pageYOffset - 100,
         behavior: 'smooth'
       });
     }
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full shadow-sm">
-      {/* 1. Integrated Banner: Stays pinned at the very top */}
-      <div className="bg-emerald-900 text-white text-center py-2.5 px-4 text-xs md:text-sm font-semibold tracking-wide border-b border-white/10">
-        <span className="hidden sm:inline">OFFRE EXCLUSIVE : </span>
-        PROMO LÈVE-TÔT — <span className="text-altea-green font-bold">10% DE RABAIS</span> AVANT LE 15 AVRIL.
+    <header className="fixed top-0 z-50 w-full">
+      {/* 1. Bannière d'offre */}
+      <div className="bg-emerald-900 text-white text-center py-2 px-4 text-xs md:text-sm font-semibold border-b border-white/10">
+        OFFRE EXCLUSIVE : PROMO LÈVE-TÔT — <span className="text-altea-green font-bold">10% DE RABAIS</span> AVANT LE 15 AVRIL.
       </div>
 
-      {/* 2. Navigation Bar: Pushes content down, solid background for visibility */}
+      {/* 2. Navigation : Transparente en haut, blanche au scroll */}
       <nav 
-        className={`w-full transition-all duration-300 border-b border-gray-100 dark:border-gray-800 ${
+        className={`w-full transition-all duration-300 ${
           isScrolled 
-            ? 'bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md py-3 shadow-md' 
-            : 'bg-white dark:bg-[#111111] py-5'
+            ? 'bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md py-3 shadow-md border-b border-gray-100' 
+            : 'bg-transparent py-5'
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          {/* Logo & Brand: Fixed visibility with dark text in light mode */}
+          {/* Logo & Brand */}
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => scrollToSection('hero')}>
             <img 
               src="/logo.png" 
               alt="ALTEA Logo" 
-              className="h-8 md:h-10 w-auto object-contain transition-transform group-hover:scale-105"
-              onError={(e) => {
-                 (e.target as HTMLImageElement).style.display = 'none';
-              }}
+              className="h-8 md:h-10 w-auto object-contain"
             />
-            <span className="text-2xl font-black tracking-tighter text-gray-900 dark:text-white">
+            <span className={`text-2xl font-black tracking-tighter ${isScrolled ? 'text-gray-900 dark:text-white' : 'text-white'}`}>
               ALTEA
             </span>
           </div>
 
-          {/* Desktop Links: Always visible against solid background */}
+          {/* Liens Desktop */}
           <div className="hidden md:flex items-center gap-8">
-            {[
-              { label: 'Tarifs', id: 'pricing' },
-              { label: 'Promos', id: 'promos' },
-              { label: 'Contact', id: 'footer' }
-            ].map((item) => (
+            {['pricing', 'promos', 'footer'].map((id) => (
               <button 
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className="text-sm font-bold tracking-wide text-gray-700 dark:text-gray-200 hover:text-altea-green dark:hover:text-altea-green transition-colors"
+                key={id}
+                onClick={() => scrollToSection(id)}
+                className={`text-sm font-bold tracking-wide transition-colors ${
+                  isScrolled ? 'text-gray-700 dark:text-gray-200 hover:text-altea-green' : 'text-white hover:text-altea-green'
+                }`}
               >
-                {item.label.toUpperCase()}
+                {id === 'pricing' ? 'TARIFS' : id === 'promos' ? 'PROMOS' : 'CONTACT'}
               </button>
             ))}
             
             <button 
               onClick={() => scrollToSection('booking')}
-              className="bg-altea-green hover:bg-altea-greenDark text-white px-6 py-2.5 rounded-full text-sm font-bold transition-all shadow-md hover:shadow-altea-green/20 active:scale-95"
+              className="bg-altea-green hover:bg-altea-greenDark text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-lg"
             >
               RÉSERVER
             </button>
 
-            <button 
-              onClick={toggleTheme}
-              className="p-2.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-altea-green/10 text-gray-800 dark:text-white transition-all"
-              aria-label="Changer le thème"
-            >
+            <button onClick={toggleTheme} className={`p-2 rounded-full ${isScrolled ? 'text-gray-800' : 'text-white'}`}>
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
           </div>
-
-          {/* Mobile Controls */}
-          <div className="flex md:hidden items-center gap-2">
-            <button 
-              onClick={toggleTheme}
-              className="p-2 text-gray-800 dark:text-white"
-            >
+          
+           {/* Mobile Toggle */}
+          <div className="flex md:hidden items-center gap-4">
+            <button onClick={toggleTheme} className={`p-2 rounded-full ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}`}>
                {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-gray-800 dark:text-white"
-            >
-              {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className={`p-2 ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}`}>
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
-
+        
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="fixed inset-0 top-[100px] bg-white dark:bg-[#111] z-40 p-8 flex flex-col gap-8 md:hidden animate-fade-in shadow-2xl overflow-y-auto">
-            {[
-              { label: 'Tarifs', id: 'pricing' },
-              { label: 'Promos', id: 'promos' },
-              { label: 'Contact', id: 'footer' }
-            ].map((item) => (
+          <div className="absolute top-full left-0 right-0 bg-white dark:bg-[#1A1A1A] border-t dark:border-gray-800 shadow-xl p-6 flex flex-col gap-6 md:hidden">
+            {['pricing', 'promos', 'footer'].map((id) => (
               <button 
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className="text-left text-3xl font-black text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800 pb-4"
+                key={id}
+                onClick={() => scrollToSection(id)}
+                className="text-left text-lg font-medium text-gray-900 dark:text-white"
               >
-                {item.label}
+                {id === 'pricing' ? 'Tarifs' : id === 'promos' ? 'Promos' : 'Contact'}
               </button>
             ))}
             <button 
               onClick={() => scrollToSection('booking')}
-              className="bg-altea-green text-white py-5 rounded-2xl font-black text-xl shadow-xl mt-auto"
+              className="bg-altea-green text-white py-3 rounded-lg font-bold text-center"
             >
-              RÉSERVER MAINTENANT
+              Réserver maintenant
             </button>
           </div>
         )}
