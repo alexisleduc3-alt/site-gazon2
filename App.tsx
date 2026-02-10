@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRight, Star } from 'lucide-react';
-import NavBar from './components/NavBar.tsx';
-import Pricing from './components/Pricing.tsx';
-import Promos from './components/Promos.tsx';
-import BookingForm from './components/BookingForm.tsx';
-import Footer from './components/Footer.tsx';
-import { LawnType, ServiceType } from './types.ts';
+import NavBar from './components/NavBar';
+import Pricing from './components/Pricing';
+import Promos from './components/Promos';
+import BookingForm from './components/BookingForm';
+import Footer from './components/Footer';
+import { LawnType, ServiceType } from './types';
 
 const App: React.FC = () => {
   const [isDark, setIsDark] = useState<boolean>(false);
@@ -32,29 +32,22 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#111111] transition-colors duration-300 font-sans selection:bg-altea-green selection:text-white">
-      
-      {/* NavBar is sticky and pushes the Hero down */}
+    <div className="min-h-screen bg-white dark:bg-[#111111] font-sans">
       <NavBar isDark={isDark} toggleTheme={toggleTheme} />
 
-      {/* Hero Section: Correct background image used with high readability overlay */}
-      <section id="hero" className="relative h-[80vh] min-h-[550px] flex items-center justify-center overflow-hidden">
+      <section id="hero" className="relative h-[90vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img 
             src="/fond-herbe.jpg" 
-            alt="Pelouse résidentielle parfaite" 
+            alt="Pelouse ALTEA" 
             className="w-full h-full object-cover"
             loading="eager"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1558449028-b53a39d100fc?q=80&w=2000&auto=format&fit=crop";
-            }}
           />
-          {/* Enhanced readability overlay: Darkening the image to make white text pop */}
-          <div className="absolute inset-0 bg-black/45"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-black/30"></div>
+          {/* Overlay pour la lisibilité du texte sur le gazon */}
+          <div className="absolute inset-0 bg-black/40"></div>
         </div>
 
-        <div className="relative z-10 text-center max-w-5xl px-6 animate-fade-in-up">
+        <div className="relative z-10 text-center max-w-5xl px-6">
           <div className="flex items-center justify-center gap-1 mb-6">
             {[1,2,3,4,5].map(i => <Star key={i} size={18} className="text-altea-green fill-altea-green drop-shadow" />)}
             <span className="text-white text-[10px] md:text-xs font-black ml-3 tracking-[0.2em] uppercase bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
@@ -91,10 +84,7 @@ const App: React.FC = () => {
 
       <Pricing onSelectPlan={handlePlanSelection} />
       <Promos />
-      <BookingForm 
-        initialLawnType={selectedLawnType} 
-        initialServiceType={selectedServiceType} 
-      />
+      <BookingForm initialLawnType={selectedLawnType} initialServiceType={selectedServiceType} />
       <Footer />
     </div>
   );
