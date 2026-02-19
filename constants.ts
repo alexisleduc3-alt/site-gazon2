@@ -32,7 +32,7 @@ export const PRICING_TIERS: PricingTier[] = [
 ];
 
 export const CONTACT_INFO = {
-  email: 'bonjour@altea.ca',
-  phone: '(514) 555-0199',
+  email: 'altea.group.qc@gmail.com',
+  phone: '(514) 889-0330',
   address: 'Québec, QC'
 };
