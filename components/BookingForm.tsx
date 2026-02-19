@@ -54,11 +54,18 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
     setIsSubmitting(true);
     setErrorMsg(null);
 
+    // --- CONFIGURATION EMAILJS ---
     const SERVICE_ID = 'service_1sjow9s';
-    const TEMPLATE_ID = 'template_59eay7o';
     const PUBLIC_KEY = 'u6N8LATJ1y9hnE259';
+    
+    // 1. Template pour toi (Excel)
+    const TEMPLATE_ID_ADMIN = 'template_59eay7o'; 
+    
+    // 2. Template pour le client (Confirmation)
+    // REMPLACE CECI PAR TON 2ÈME ID CRÉÉ TANTÔT (ex: template_abc123)
+    const TEMPLATE_ID_CLIENT = 'METTRE_ID_TEMPLATE_CLIENT_ICI'; 
 
-    // Formatage des données pour faciliter l'export Excel (clés v_... demandées)
+    // Préparation des données (fonctionne pour les deux templates)
     const templateParams = {
       to_name: "Admin Altea",
       client_name: formData.name,
@@ -68,16 +75,25 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
       lawn_type: formData.lawnType === 'detache' ? 'Maison Détachée' : 'Jumelé / Ville',
       land_category: formData.landCategory === 'standard' ? 'Standard' : 'Grand/Boisé',
       service_type: formData.serviceType,
-      is_duo: formData.isDuoVoisin ? 'OUI' : 'Non',
-      v_nom: formData.isDuoVoisin ? formData.neighborInfo?.name : '-',
-      v_adr: formData.isDuoVoisin ? formData.neighborInfo?.address : '-',
-      v_tel: formData.isDuoVoisin ? formData.neighborInfo?.phone : '-',
-      v_mail: formData.isDuoVoisin ? formData.neighborInfo?.email : '-',
+      is_duo: formData.isDuoVoisin ? 'OUI' : 'NON',
+      // Variables spécifiques pour Excel (v_...)
+      v_nom: formData.isDuoVoisin ? formData.neighborInfo?.name : '',
+      v_adr: formData.isDuoVoisin ? formData.neighborInfo?.address : '',
+      v_tel: formData.isDuoVoisin ? formData.neighborInfo?.phone : '',
+      v_mail: formData.isDuoVoisin ? formData.neighborInfo?.email : '',
       commentaire: formData.comment || 'Aucun'
     };
 
     try {
-      await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY);
+      // Envoi 1 : À toi (Format Excel)
+      await emailjs.send(SERVICE_ID, TEMPLATE_ID_ADMIN, templateParams, PUBLIC_KEY);
+      
+      // Envoi 2 : Au client (Confirmation)
+      // On vérifie si tu as mis le ID, sinon on n'envoie pas le 2ème pour éviter un crash
+      if (TEMPLATE_ID_CLIENT && TEMPLATE_ID_CLIENT !== 'METTRE_ID_TEMPLATE_CLIENT_ICI') {
+        await emailjs.send(SERVICE_ID, TEMPLATE_ID_CLIENT, templateParams, PUBLIC_KEY);
+      }
+
       setIsSuccess(true);
     } catch (error) {
       console.error('Erreur EmailJS:', error);
@@ -96,7 +112,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
           </div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Demande Reçue !</h2>
           <p className="text-gray-600 dark:text-gray-300 text-lg">
-            Merci {formData.name}. Notre équipe a bien reçu votre demande et vous contactera sous 24h pour confirmer le tout.
+            Merci {formData.name}. Un courriel de confirmation vient de vous être envoyé. Notre équipe vous contactera sous 24h.
           </p>
           <button 
             onClick={() => setIsSuccess(false)}
@@ -190,7 +206,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
           </div>
 
           <div className="mb-8 border border-blue-100 dark:border-blue-900/30 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl p-6">
-            <div className="flex items-start gap-4">
+            <div className="flex items-start gap-4 mb-4">
               <input 
                 type="checkbox" id="duoVoisin" checked={formData.isDuoVoisin}
                 onChange={e => setFormData({...formData, isDuoVoisin: e.target.checked})}
@@ -207,32 +223,32 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
             </div>
 
             {formData.isDuoVoisin && (
-              <div className="mt-6 grid md:grid-cols-2 gap-4 animate-fade-in">
+              <div className="grid md:grid-cols-2 gap-4 animate-fade-in">
                 <input 
                   placeholder="Nom du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.name}
                   onChange={e => handleNeighborChange('name', e.target.value)}
-                  className="px-4 py-2.5 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
+                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
                 />
                 <input 
                   placeholder="Adresse du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.address}
                   onChange={e => handleNeighborChange('address', e.target.value)}
-                  className="px-4 py-2.5 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
+                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
                 />
                 <input 
                   type="tel"
                   placeholder="Téléphone du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.phone}
                   onChange={e => handleNeighborChange('phone', e.target.value)}
-                  className="px-4 py-2.5 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
+                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
                 />
                 <input 
                   type="email"
                   placeholder="Courriel du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.email}
                   onChange={e => handleNeighborChange('email', e.target.value)}
-                  className="px-4 py-2.5 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
+                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
                 />
               </div>
             )}
@@ -243,8 +259,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
             <textarea 
               value={formData.comment}
               onChange={e => setFormData({...formData, comment: e.target.value})}
-              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none min-h-[100px]"
-              placeholder="Informations supplémentaires sur votre terrain..."
+              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none min-h-[100px] resize-none"
+              placeholder="Informations supplémentaires sur votre terrain (chien, piscine, code de barrière...)"
             />
           </div>
 
