@@ -58,12 +58,11 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
     const SERVICE_ID = 'service_1sjow9s';
     const PUBLIC_KEY = 'u6N8LATJ1y9hnE259';
     
-    // 1. Template pour toi (Excel)
+    // 1. Template pour toi (Excel) - Admin
     const TEMPLATE_ID_ADMIN = 'template_59eay7o'; 
     
     // 2. Template pour le client (Confirmation automatique)
-    // N'oublie pas de remplacer cet ID par celui créé dans ton dashboard
-    const TEMPLATE_ID_CLIENT = 'METTRE_ID_TEMPLATE_CLIENT_ICI'; 
+    const TEMPLATE_ID_CLIENT = 'template_ahcjxw9'; 
 
     // Préparation des données pour EmailJS
     const templateParams = {
@@ -75,28 +74,31 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
       service_type: formData.serviceType,
       lawn_type: formData.lawnType === 'detache' ? 'Maison Détachée' : 'Jumelé / Ville',
       land_category: formData.landCategory === 'standard' ? 'Standard' : 'Grand/Boisé',
-      is_duo: formData.isDuoVoisin ? 'OUI' : 'NON',
-      // Variables du voisin (v_...) - On laisse vide si pas de duo pour Excel
+      
+      // Variable logique pour afficher/cacher le bloc voisin dans le mail
+      is_duo: formData.isDuoVoisin ? 'OUI' : '', 
+      
+      // Variables du voisin (v_...) - Vide si pas de duo
       v_nom: formData.isDuoVoisin ? formData.neighborInfo?.name : '',
       v_adr: formData.isDuoVoisin ? formData.neighborInfo?.address : '',
       v_tel: formData.isDuoVoisin ? formData.neighborInfo?.phone : '',
       v_mail: formData.isDuoVoisin ? formData.neighborInfo?.email : '',
-      commentaire: formData.comment || 'Aucun'
+      
+      commentaire: formData.comment || 'Aucun commentaire'
     };
 
     try {
-      // Envoi 1 : À toi (Format Excel avec 2 lignes possibles)
+      // Envoi 1 : À toi (Format Excel)
       await emailjs.send(SERVICE_ID, TEMPLATE_ID_ADMIN, templateParams, PUBLIC_KEY);
       
       // Envoi 2 : Au client (Confirmation)
-      if (TEMPLATE_ID_CLIENT && TEMPLATE_ID_CLIENT !== 'METTRE_ID_TEMPLATE_CLIENT_ICI') {
-        await emailjs.send(SERVICE_ID, TEMPLATE_ID_CLIENT, templateParams, PUBLIC_KEY);
-      }
+      // On attend que le premier soit parti pour envoyer le deuxième
+      await emailjs.send(SERVICE_ID, TEMPLATE_ID_CLIENT, templateParams, PUBLIC_KEY);
 
       setIsSuccess(true);
     } catch (error) {
       console.error('Erreur EmailJS:', error);
-      setErrorMsg("Une erreur est survenue lors de l'envoi. Veuillez nous appeler directement.");
+      setErrorMsg("Une erreur est survenue lors de l'envoi. Veuillez vérifier votre connexion ou nous appeler.");
     } finally {
       setIsSubmitting(false);
     }
@@ -111,10 +113,18 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
           </div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Demande Reçue !</h2>
           <p className="text-gray-600 dark:text-gray-300 text-lg">
-            Merci {formData.name}. Un courriel de confirmation vous a été envoyé. On se reparle sous 24h !
+            Merci {formData.name}. Un courriel de confirmation vous a été envoyé à <strong>{formData.email}</strong>.<br/>
+            On se reparle sous 24h pour votre soumission officielle !
           </p>
           <button 
-            onClick={() => setIsSuccess(false)}
+            onClick={() => {
+                setIsSuccess(false);
+                setFormData({
+                    ...formData,
+                    name: '', phone: '', email: '', address: '', comment: '', 
+                    isDuoVoisin: false, neighborInfo: { name: '', address: '', phone: '', email: '' }
+                });
+            }}
             className="mt-8 text-altea-green font-medium hover:underline"
           >
             Faire une autre demande
