@@ -14,9 +14,9 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
     address: '',
     email: '',
     phone: '',
-    lawnType: initialLawnType,
-    landCategory: 'standard',
-    serviceType: initialServiceType,
+    lawnType: initialLawnType || 'jumele',
+    landCategory: 'standard', // Gardé en arrière-plan pour compatibilité avec tes types
+    serviceType: initialServiceType || 'regular',
     isDuoVoisin: false,
     neighborInfo: {
       name: '',
@@ -57,44 +57,54 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
     // --- CONFIGURATION EMAILJS ---
     const SERVICE_ID = 'service_1sjow9s';
     const PUBLIC_KEY = 'u6N8LATJ1y9hnE259';
-    
-    // 1. Template pour toi (Excel) - Admin
     const TEMPLATE_ID_ADMIN = 'template_59eay7o'; 
-    
-    // 2. Template pour le client (Confirmation automatique)
     const TEMPLATE_ID_CLIENT = 'template_ahcjxw9'; 
 
-    // Préparation des données pour EmailJS
+    // Formatage propre pour l'affichage
+    const lawnTypeDisplay = formData.lawnType === 'detache' ? 'Maison Détachée' : 'Maison de Ville / Jumelé';
+    let serviceTypeDisplay = '';
+    if (formData.serviceType === 'regular') serviceTypeDisplay = 'Entretien régulier';
+    else if (formData.serviceType === 'regular_leaves') serviceTypeDisplay = 'Entretien régulier + Nettoyage des feuilles';
+    else serviceTypeDisplay = 'Ramassage de feuilles seulement';
+
+    // Sécuriser les commentaires pour Excel (enlever les sauts de ligne qui brisent les tableaux)
+    const safeComment = (formData.comment || 'Aucun').replace(/\n/g, ' | ');
+
+    // --- GÉNÉRATION DES LIGNES EXCEL ---
+    // Ordre des colonnes: Nom ; Téléphone ; Courriel ; Adresse ; TypePropriété ; Forfait ; Duo ; Commentaire
+    let excelLines = `${formData.name};${formData.phone};${formData.email};${formData.address};${lawnTypeDisplay};${serviceTypeDisplay};${formData.isDuoVoisin ? 'OUI (Client 1)' : 'NON'};${safeComment}`;
+
+    // Si Duo Voisin, on ajoute une 2e ligne avec EXACTEMENT les mêmes colonnes
+    if (formData.isDuoVoisin) {
+      const nInfo = formData.neighborInfo;
+      const neighborLine = `${nInfo?.name || 'N/A'};${nInfo?.phone || 'N/A'};${nInfo?.email || 'N/A'};${nInfo?.address || 'N/A'};${lawnTypeDisplay};${serviceTypeDisplay};OUI (Client 2);${safeComment}`;
+      excelLines += `\n${neighborLine}`;
+    }
+
     const templateParams = {
       to_name: "Admin Altea",
       client_name: formData.name,
       client_email: formData.email,
       client_phone: formData.phone,
       client_address: formData.address,
-      service_type: formData.serviceType,
-      lawn_type: formData.lawnType === 'detache' ? 'Maison Détachée' : 'Jumelé / Ville',
-      land_category: formData.landCategory === 'standard' ? 'Standard' : 'Grand/Boisé',
       
-      // Variable logique pour afficher/cacher le bloc voisin dans le mail
-      is_duo: formData.isDuoVoisin ? 'OUI' : '', 
+      lawn_type_display: lawnTypeDisplay,
+      service_type_display: serviceTypeDisplay,
       
-      // Variables du voisin (v_...) - Vide si pas de duo
-      v_nom: formData.isDuoVoisin ? formData.neighborInfo?.name : '',
-      v_adr: formData.isDuoVoisin ? formData.neighborInfo?.address : '',
-      v_tel: formData.isDuoVoisin ? formData.neighborInfo?.phone : '',
-      v_mail: formData.isDuoVoisin ? formData.neighborInfo?.email : '',
+      excel_lines: excelLines, // Lignes parfaites prêtes pour copier-coller
+      
+      is_duo: formData.isDuoVoisin ? 'OUI' : 'NON', 
+      v_nom: formData.isDuoVoisin ? formData.neighborInfo?.name : 'N/A',
+      v_adr: formData.isDuoVoisin ? formData.neighborInfo?.address : 'N/A',
+      v_tel: formData.isDuoVoisin ? formData.neighborInfo?.phone : 'N/A',
+      v_mail: formData.isDuoVoisin ? formData.neighborInfo?.email : 'N/A',
       
       commentaire: formData.comment || 'Aucun commentaire'
     };
 
     try {
-      // Envoi 1 : À toi (Format Excel)
       await emailjs.send(SERVICE_ID, TEMPLATE_ID_ADMIN, templateParams, PUBLIC_KEY);
-      
-      // Envoi 2 : Au client (Confirmation)
-      // On attend que le premier soit parti pour envoyer le deuxième
       await emailjs.send(SERVICE_ID, TEMPLATE_ID_CLIENT, templateParams, PUBLIC_KEY);
-
       setIsSuccess(true);
     } catch (error) {
       console.error('Erreur EmailJS:', error);
@@ -147,13 +157,15 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white dark:bg-[#1A1A1A] p-8 md:p-10 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800">
+          
+          {/* Infos Client */}
           <div className="grid md:grid-cols-2 gap-6 mb-6">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Nom complet</label>
               <input 
                 type="text" required value={formData.name}
                 onChange={e => setFormData({...formData, name: e.target.value})}
-                className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none"
+                className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none focus:border-altea-green focus:ring-1 focus:ring-altea-green transition-all"
                 placeholder="Ex: Jean Tremblay"
               />
             </div>
@@ -162,7 +174,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
               <input 
                 type="tel" required value={formData.phone}
                 onChange={e => setFormData({...formData, phone: e.target.value})}
-                className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none"
+                className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none focus:border-altea-green focus:ring-1 focus:ring-altea-green transition-all"
                 placeholder="(418) 555-0123"
               />
             </div>
@@ -173,7 +185,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
             <input 
               type="text" required value={formData.address}
               onChange={e => setFormData({...formData, address: e.target.value})}
-              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none"
+              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none focus:border-altea-green focus:ring-1 focus:ring-altea-green transition-all"
               placeholder="123 Rue des Érables, Québec"
             />
           </div>
@@ -183,46 +195,95 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
             <input 
               type="email" required value={formData.email}
               onChange={e => setFormData({...formData, email: e.target.value})}
-              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none"
+              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none focus:border-altea-green focus:ring-1 focus:ring-altea-green transition-all"
               placeholder="votre@courriel.com"
             />
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 mb-8 bg-gray-50 dark:bg-[#111] p-6 rounded-xl border border-gray-100 dark:border-gray-800">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Catégorie de terrain</label>
-              <select 
-                value={formData.landCategory}
-                onChange={e => setFormData({...formData, landCategory: e.target.value as LandCategory})}
-                className="w-full px-4 py-3 rounded-lg bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none"
-              >
-                <option value="standard">Terrain Standard</option>
-                <option value="grand_boise">Grand terrain / Boisé</option>
-              </select>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Type de terrain</label>
-              <select 
-                value={formData.lawnType}
-                onChange={e => setFormData({...formData, lawnType: e.target.value as LawnType})}
-                className="w-full px-4 py-3 rounded-lg bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none"
-              >
-                <option value="jumele">Maison de Ville / Jumelé</option>
-                <option value="detache">Maison Détachée</option>
-              </select>
+          {/* Type de propriété (Boutons Radio) */}
+          <div className="mb-8">
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block">Type de propriété</label>
+            <div className="grid md:grid-cols-2 gap-4">
+              <label className={`cursor-pointer border rounded-xl p-4 flex items-center gap-3 transition-all ${formData.lawnType === 'jumele' ? 'border-altea-green bg-green-50/20 dark:bg-altea-green/10' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
+                <input 
+                  type="radio" name="lawnType" value="jumele"
+                  checked={formData.lawnType === 'jumele'}
+                  onChange={e => setFormData({...formData, lawnType: e.target.value as LawnType})}
+                  className="w-5 h-5 text-altea-green focus:ring-altea-green"
+                />
+                <span className="font-medium text-gray-900 dark:text-white">Maison de Ville / Jumelé</span>
+              </label>
+
+              <label className={`cursor-pointer border rounded-xl p-4 flex items-center gap-3 transition-all ${formData.lawnType === 'detache' ? 'border-altea-green bg-green-50/20 dark:bg-altea-green/10' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
+                <input 
+                  type="radio" name="lawnType" value="detache"
+                  checked={formData.lawnType === 'detache'}
+                  onChange={e => setFormData({...formData, lawnType: e.target.value as LawnType})}
+                  className="w-5 h-5 text-altea-green focus:ring-altea-green"
+                />
+                <span className="font-medium text-gray-900 dark:text-white">Maison Détachée</span>
+              </label>
             </div>
           </div>
 
+          {/* Choix du forfait (Boutons Radio) */}
+          <div className="mb-2">
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block">Choix du forfait</label>
+            <div className="space-y-3">
+              <label className={`cursor-pointer border rounded-xl p-4 flex items-start gap-3 transition-all ${formData.serviceType === 'regular' ? 'border-altea-green bg-green-50/20 dark:bg-altea-green/10' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
+                <input 
+                  type="radio" name="serviceType" value="regular"
+                  checked={formData.serviceType === 'regular'}
+                  onChange={e => setFormData({...formData, serviceType: e.target.value as ServiceType})}
+                  className="w-5 h-5 text-altea-green focus:ring-altea-green mt-1"
+                />
+                <div>
+                  <span className="font-bold text-gray-900 dark:text-white block">Entretien régulier</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Inclut : Tonte, Bordures, Soufflage</span>
+                </div>
+              </label>
+
+              <label className={`cursor-pointer border rounded-xl p-4 flex items-start gap-3 transition-all ${formData.serviceType === 'regular_leaves' ? 'border-altea-green bg-green-50/20 dark:bg-altea-green/10' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
+                <input 
+                  type="radio" name="serviceType" value="regular_leaves"
+                  checked={formData.serviceType === 'regular_leaves'}
+                  onChange={e => setFormData({...formData, serviceType: e.target.value as ServiceType})}
+                  className="w-5 h-5 text-altea-green focus:ring-altea-green mt-1"
+                />
+                <div>
+                  <span className="font-bold text-gray-900 dark:text-white block">Entretien régulier + Nettoyage des feuilles</span>
+                </div>
+              </label>
+
+              <label className={`cursor-pointer border rounded-xl p-4 flex items-start gap-3 transition-all ${formData.serviceType === 'leaves_only' ? 'border-altea-green bg-green-50/20 dark:bg-altea-green/10' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
+                <input 
+                  type="radio" name="serviceType" value="leaves_only"
+                  checked={formData.serviceType === 'leaves_only'}
+                  onChange={e => setFormData({...formData, serviceType: e.target.value as ServiceType})}
+                  className="w-5 h-5 text-altea-green focus:ring-altea-green mt-1"
+                />
+                <div>
+                  <span className="font-bold text-gray-900 dark:text-white block">Ramassage de feuilles seulement</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Forfait saisonnier</span>
+                </div>
+              </label>
+            </div>
+          </div>
+          
+          <p className="text-xs text-gray-500 italic mb-8 text-center mt-3">
+            Pour les terrains boisés ou besoins hors-normes, veuillez préciser dans les commentaires.
+          </p>
+
+          {/* Section Duo Voisin */}
           <div className="mb-8 border border-blue-100 dark:border-blue-900/30 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl p-6">
             <div className="flex items-start gap-4 mb-4">
               <input 
                 type="checkbox" id="duoVoisin" checked={formData.isDuoVoisin}
                 onChange={e => setFormData({...formData, isDuoVoisin: e.target.checked})}
-                className="w-5 h-5 rounded text-altea-green mt-1 cursor-pointer"
+                className="w-5 h-5 rounded text-altea-green focus:ring-altea-green mt-1 cursor-pointer"
               />
               <div>
-                <label htmlFor="duoVoisin" className="font-bold text-gray-900 dark:text-white cursor-pointer">
+                <label htmlFor="duoVoisin" className="font-bold text-gray-900 dark:text-white cursor-pointer block">
                   Duo Voisin – Crédit de 50 $ chacun
                 </label>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -232,32 +293,32 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
             </div>
 
             {formData.isDuoVoisin && (
-              <div className="grid md:grid-cols-2 gap-4 animate-fade-in">
+              <div className="grid md:grid-cols-2 gap-4 animate-fade-in mt-4">
                 <input 
                   placeholder="Nom du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.name}
                   onChange={e => handleNeighborChange('name', e.target.value)}
-                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
+                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-altea-green"
                 />
                 <input 
                   placeholder="Adresse du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.address}
                   onChange={e => handleNeighborChange('address', e.target.value)}
-                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
+                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-altea-green"
                 />
                 <input 
                   type="tel"
                   placeholder="Téléphone du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.phone}
                   onChange={e => handleNeighborChange('phone', e.target.value)}
-                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
+                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-altea-green"
                 />
                 <input 
                   type="email"
                   placeholder="Courriel du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.email}
                   onChange={e => handleNeighborChange('email', e.target.value)}
-                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none"
+                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-altea-green"
                 />
               </div>
             )}
@@ -268,8 +329,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
             <textarea 
               value={formData.comment}
               onChange={e => setFormData({...formData, comment: e.target.value})}
-              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none min-h-[100px] resize-none"
-              placeholder="Informations supplémentaires (chien, piscine, code de barrière...)"
+              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none focus:border-altea-green focus:ring-1 focus:ring-altea-green min-h-[100px] resize-none"
+              placeholder="Informations supplémentaires sur votre terrain (boisé, chien, piscine...)"
             />
           </div>
 
