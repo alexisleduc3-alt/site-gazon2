@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { LawnType, ServiceType, LandCategory, BookingFormData } from '../types';
+import { LawnType, ServiceType, BookingFormData } from '../types';
 import { CalendarCheck, Loader2, AlertCircle } from 'lucide-react';
 import emailjs from '@emailjs/browser';
+import RadioCard from './RadioCard'; // Import du nouveau composant
 
 interface BookingFormProps {
   initialLawnType: LawnType;
@@ -15,8 +16,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
     email: '',
     phone: '',
     lawnType: initialLawnType || 'jumele',
-    landCategory: 'standard', // Gardé en arrière-plan pour compatibilité avec tes types
-    serviceType: initialServiceType || 'regular',
+    landCategory: 'standard', // Conservé pour la compatibilité des types
+    serviceType: initialServiceType || 'tonte',
     isDuoVoisin: false,
     neighborInfo: {
       name: '',
@@ -60,21 +61,21 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
     const TEMPLATE_ID_ADMIN = 'template_59eay7o'; 
     const TEMPLATE_ID_CLIENT = 'template_ahcjxw9'; 
 
-    // Formatage propre pour l'affichage
+    // Traduction propre pour l'affichage dans le mail et Excel
     const lawnTypeDisplay = formData.lawnType === 'detache' ? 'Maison Détachée' : 'Maison de Ville / Jumelé';
     let serviceTypeDisplay = '';
-    if (formData.serviceType === 'regular') serviceTypeDisplay = 'Entretien régulier';
-    else if (formData.serviceType === 'regular_leaves') serviceTypeDisplay = 'Entretien régulier + Nettoyage des feuilles';
+    if (formData.serviceType === 'tonte') serviceTypeDisplay = 'Entretien régulier';
+    else if (formData.serviceType === 'tonte_feuilles') serviceTypeDisplay = 'Entretien régulier + Nettoyage des feuilles';
     else serviceTypeDisplay = 'Ramassage de feuilles seulement';
 
-    // Sécuriser les commentaires pour Excel (enlever les sauts de ligne qui brisent les tableaux)
+    // Sécuriser les commentaires pour Excel (remplace les sauts de ligne par " | ")
     const safeComment = (formData.comment || 'Aucun').replace(/\n/g, ' | ');
 
     // --- GÉNÉRATION DES LIGNES EXCEL ---
-    // Ordre des colonnes: Nom ; Téléphone ; Courriel ; Adresse ; TypePropriété ; Forfait ; Duo ; Commentaire
+    // Ordre : Nom ; Téléphone ; Courriel ; Adresse ; TypePropriété ; Forfait ; Duo ; Commentaire
     let excelLines = `${formData.name};${formData.phone};${formData.email};${formData.address};${lawnTypeDisplay};${serviceTypeDisplay};${formData.isDuoVoisin ? 'OUI (Client 1)' : 'NON'};${safeComment}`;
 
-    // Si Duo Voisin, on ajoute une 2e ligne avec EXACTEMENT les mêmes colonnes
+    // Si Duo Voisin, on génère la 2ème ligne identique pour le voisin
     if (formData.isDuoVoisin) {
       const nInfo = formData.neighborInfo;
       const neighborLine = `${nInfo?.name || 'N/A'};${nInfo?.phone || 'N/A'};${nInfo?.email || 'N/A'};${nInfo?.address || 'N/A'};${lawnTypeDisplay};${serviceTypeDisplay};OUI (Client 2);${safeComment}`;
@@ -90,8 +91,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
       
       lawn_type_display: lawnTypeDisplay,
       service_type_display: serviceTypeDisplay,
-      
-      excel_lines: excelLines, // Lignes parfaites prêtes pour copier-coller
+      excel_lines: excelLines, 
       
       is_duo: formData.isDuoVoisin ? 'OUI' : 'NON', 
       v_nom: formData.isDuoVoisin ? formData.neighborInfo?.name : 'N/A',
@@ -200,73 +200,54 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
             />
           </div>
 
-          {/* Type de propriété (Boutons Radio) */}
+          {/* Type de propriété (Utilisation de RadioCard) */}
           <div className="mb-8">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block">Type de propriété</label>
             <div className="grid md:grid-cols-2 gap-4">
-              <label className={`cursor-pointer border rounded-xl p-4 flex items-center gap-3 transition-all ${formData.lawnType === 'jumele' ? 'border-altea-green bg-green-50/20 dark:bg-altea-green/10' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
-                <input 
-                  type="radio" name="lawnType" value="jumele"
-                  checked={formData.lawnType === 'jumele'}
-                  onChange={e => setFormData({...formData, lawnType: e.target.value as LawnType})}
-                  className="w-5 h-5 text-altea-green focus:ring-altea-green"
-                />
-                <span className="font-medium text-gray-900 dark:text-white">Maison de Ville / Jumelé</span>
-              </label>
-
-              <label className={`cursor-pointer border rounded-xl p-4 flex items-center gap-3 transition-all ${formData.lawnType === 'detache' ? 'border-altea-green bg-green-50/20 dark:bg-altea-green/10' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
-                <input 
-                  type="radio" name="lawnType" value="detache"
-                  checked={formData.lawnType === 'detache'}
-                  onChange={e => setFormData({...formData, lawnType: e.target.value as LawnType})}
-                  className="w-5 h-5 text-altea-green focus:ring-altea-green"
-                />
-                <span className="font-medium text-gray-900 dark:text-white">Maison Détachée</span>
-              </label>
+              <RadioCard 
+                name="lawnType"
+                value="jumele"
+                title="Maison de Ville / Jumelé"
+                checked={formData.lawnType === 'jumele'}
+                onChange={e => setFormData({...formData, lawnType: e.target.value as LawnType})}
+              />
+              <RadioCard 
+                name="lawnType"
+                value="detache"
+                title="Maison Détachée"
+                checked={formData.lawnType === 'detache'}
+                onChange={e => setFormData({...formData, lawnType: e.target.value as LawnType})}
+              />
             </div>
           </div>
 
-          {/* Choix du forfait (Boutons Radio) */}
+          {/* Choix du forfait (Utilisation de RadioCard) */}
           <div className="mb-2">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block">Choix du forfait</label>
             <div className="space-y-3">
-              <label className={`cursor-pointer border rounded-xl p-4 flex items-start gap-3 transition-all ${formData.serviceType === 'regular' ? 'border-altea-green bg-green-50/20 dark:bg-altea-green/10' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
-                <input 
-                  type="radio" name="serviceType" value="regular"
-                  checked={formData.serviceType === 'regular'}
-                  onChange={e => setFormData({...formData, serviceType: e.target.value as ServiceType})}
-                  className="w-5 h-5 text-altea-green focus:ring-altea-green mt-1"
-                />
-                <div>
-                  <span className="font-bold text-gray-900 dark:text-white block">Entretien régulier</span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Inclut : Tonte, Bordures, Soufflage</span>
-                </div>
-              </label>
-
-              <label className={`cursor-pointer border rounded-xl p-4 flex items-start gap-3 transition-all ${formData.serviceType === 'regular_leaves' ? 'border-altea-green bg-green-50/20 dark:bg-altea-green/10' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
-                <input 
-                  type="radio" name="serviceType" value="regular_leaves"
-                  checked={formData.serviceType === 'regular_leaves'}
-                  onChange={e => setFormData({...formData, serviceType: e.target.value as ServiceType})}
-                  className="w-5 h-5 text-altea-green focus:ring-altea-green mt-1"
-                />
-                <div>
-                  <span className="font-bold text-gray-900 dark:text-white block">Entretien régulier + Nettoyage des feuilles</span>
-                </div>
-              </label>
-
-              <label className={`cursor-pointer border rounded-xl p-4 flex items-start gap-3 transition-all ${formData.serviceType === 'leaves_only' ? 'border-altea-green bg-green-50/20 dark:bg-altea-green/10' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
-                <input 
-                  type="radio" name="serviceType" value="leaves_only"
-                  checked={formData.serviceType === 'leaves_only'}
-                  onChange={e => setFormData({...formData, serviceType: e.target.value as ServiceType})}
-                  className="w-5 h-5 text-altea-green focus:ring-altea-green mt-1"
-                />
-                <div>
-                  <span className="font-bold text-gray-900 dark:text-white block">Ramassage de feuilles seulement</span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Forfait saisonnier</span>
-                </div>
-              </label>
+              <RadioCard 
+                name="serviceType"
+                value="tonte"
+                title="Entretien régulier"
+                subtitle="Inclut : Tonte, Bordures, Soufflage"
+                checked={formData.serviceType === 'tonte'}
+                onChange={e => setFormData({...formData, serviceType: e.target.value as ServiceType})}
+              />
+              <RadioCard 
+                name="serviceType"
+                value="tonte_feuilles"
+                title="Entretien régulier + Nettoyage des feuilles"
+                checked={formData.serviceType === 'tonte_feuilles'}
+                onChange={e => setFormData({...formData, serviceType: e.target.value as ServiceType})}
+              />
+              <RadioCard 
+                name="serviceType"
+                value="feuilles_only"
+                title="Ramassage de feuilles seulement"
+                subtitle="Forfait saisonnier"
+                checked={formData.serviceType === 'feuilles_only'}
+                onChange={e => setFormData({...formData, serviceType: e.target.value as ServiceType})}
+              />
             </div>
           </div>
           
@@ -280,7 +261,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
               <input 
                 type="checkbox" id="duoVoisin" checked={formData.isDuoVoisin}
                 onChange={e => setFormData({...formData, isDuoVoisin: e.target.checked})}
-                className="w-5 h-5 rounded text-altea-green focus:ring-altea-green mt-1 cursor-pointer"
+                className="w-5 h-5 rounded text-altea-green focus:ring-altea-green mt-1 accent-altea-green cursor-pointer"
               />
               <div>
                 <label htmlFor="duoVoisin" className="font-bold text-gray-900 dark:text-white cursor-pointer block">
@@ -298,27 +279,27 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
                   placeholder="Nom du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.name}
                   onChange={e => handleNeighborChange('name', e.target.value)}
-                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-altea-green"
+                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-altea-green focus:ring-1 focus:ring-altea-green"
                 />
                 <input 
                   placeholder="Adresse du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.address}
                   onChange={e => handleNeighborChange('address', e.target.value)}
-                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-altea-green"
+                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-altea-green focus:ring-1 focus:ring-altea-green"
                 />
                 <input 
                   type="tel"
                   placeholder="Téléphone du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.phone}
                   onChange={e => handleNeighborChange('phone', e.target.value)}
-                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-altea-green"
+                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-altea-green focus:ring-1 focus:ring-altea-green"
                 />
                 <input 
                   type="email"
                   placeholder="Courriel du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.email}
                   onChange={e => handleNeighborChange('email', e.target.value)}
-                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-altea-green"
+                  className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-altea-green focus:ring-1 focus:ring-altea-green"
                 />
               </div>
             )}
