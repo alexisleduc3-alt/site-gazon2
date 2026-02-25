@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { LawnType, ServiceType, BookingFormData } from '../types';
+import RadioCard from './RadioCard';
 import { CalendarCheck, Loader2, AlertCircle } from 'lucide-react';
 import emailjs from '@emailjs/browser';
-import RadioCard from './RadioCard';
 
 interface BookingFormProps {
   initialLawnType: LawnType;
@@ -71,10 +71,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
     const safeComment = (formData.comment || 'Aucun').replace(/\n/g, ' | ');
 
     // --- GÉNÉRATION DES LIGNES EXCEL ---
-    // Ordre : Nom ; Téléphone ; Courriel ; Adresse ; TypePropriété ; Forfait ; Duo ; Commentaire
     let excelLines = `${formData.name};${formData.phone};${formData.email};${formData.address};${lawnTypeDisplay};${serviceTypeDisplay};${formData.isDuoVoisin ? 'OUI (Client 1)' : 'NON'};${safeComment}`;
 
-    // Si Duo Voisin, on génère la 2ème ligne identique pour le voisin
     if (formData.isDuoVoisin) {
       const nInfo = formData.neighborInfo;
       const neighborLine = `${nInfo?.name || 'N/A'};${nInfo?.phone || 'N/A'};${nInfo?.email || 'N/A'};${nInfo?.address || 'N/A'};${lawnTypeDisplay};${serviceTypeDisplay};OUI (Client 2);${safeComment}`;
@@ -198,65 +196,74 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
             />
           </div>
 
-          <div className="mb-8">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block">Type de propriété</label>
-            <div className="grid md:grid-cols-2 gap-4">
-              <RadioCard 
-                name="lawnType"
-                value="jumele"
-                title="Maison de Ville / Jumelé"
-                checked={formData.lawnType === 'jumele'}
-                onChange={e => setFormData({...formData, lawnType: e.target.value as LawnType})}
-              />
-              <RadioCard 
-                name="lawnType"
-                value="detache"
-                title="Maison Détachée"
-                checked={formData.lawnType === 'detache'}
-                onChange={e => setFormData({...formData, lawnType: e.target.value as LawnType})}
-              />
+          <div className="space-y-8 mb-4">
+            <div>
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block">Type de propriété</label>
+              <div className="grid md:grid-cols-2 gap-4">
+                <RadioCard 
+                  id="jumele"
+                  name="lawnType"
+                  value="jumele"
+                  checked={formData.lawnType === 'jumele'}
+                  onChange={(value) => setFormData({ ...formData, lawnType: value as LawnType })}
+                  label="Maison de Ville / Jumelé"
+                />
+                <RadioCard 
+                  id="detache"
+                  name="lawnType"
+                  value="detache"
+                  checked={formData.lawnType === 'detache'}
+                  onChange={(value) => setFormData({ ...formData, lawnType: value as LawnType })}
+                  label="Maison Détachée"
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="mb-2">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block">Choix du forfait</label>
-            <div className="space-y-3">
-              <RadioCard 
-                name="serviceType"
-                value="tonte"
-                title="Entretien régulier"
-                subtitle="Inclut : Tonte, Bordures, Soufflage"
-                checked={formData.serviceType === 'tonte'}
-                onChange={e => setFormData({...formData, serviceType: e.target.value as ServiceType})}
-              />
-              <RadioCard 
-                name="serviceType"
-                value="tonte_feuilles"
-                title="Entretien régulier + Nettoyage des feuilles"
-                checked={formData.serviceType === 'tonte_feuilles'}
-                onChange={e => setFormData({...formData, serviceType: e.target.value as ServiceType})}
-              />
-              <RadioCard 
-                name="serviceType"
-                value="feuilles_only"
-                title="Ramassage de feuilles seulement"
-                subtitle="Forfait saisonnier"
-                checked={formData.serviceType === 'feuilles_only'}
-                onChange={e => setFormData({...formData, serviceType: e.target.value as ServiceType})}
-              />
+            <div>
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block">Choix du forfait</label>
+              <div className="space-y-4">
+                <RadioCard 
+                  id="tonte"
+                  name="serviceType"
+                  value="tonte"
+                  checked={formData.serviceType === 'tonte'}
+                  onChange={(value) => setFormData({ ...formData, serviceType: value as ServiceType })}
+                  label="Entretien régulier"
+                  description="Inclut : Tonte, Bordures, Soufflage"
+                />
+                <RadioCard 
+                  id="tonte_feuilles"
+                  name="serviceType"
+                  value="tonte_feuilles"
+                  checked={formData.serviceType === 'tonte_feuilles'}
+                  onChange={(value) => setFormData({ ...formData, serviceType: value as ServiceType })}
+                  label="Entretien régulier + Nettoyage des feuilles"
+                />
+                <RadioCard 
+                  id="feuilles_only"
+                  name="serviceType"
+                  value="feuilles_only"
+                  checked={formData.serviceType === 'feuilles_only'}
+                  onChange={(value) => setFormData({ ...formData, serviceType: value as ServiceType })}
+                  label="Ramassage de feuilles seulement"
+                  description="Forfait saisonnier"
+                />
+              </div>
             </div>
           </div>
           
-          <p className="text-xs text-gray-500 italic mb-8 text-center mt-3">
-            Pour les terrains boisés ou besoins hors-normes, veuillez préciser dans les commentaires ci-dessous.
-          </p>
+          <div className="text-center mb-8">
+            <p className="text-xs text-gray-500 italic mb-8 mt-3">
+              Pour les terrains boisés ou besoins hors-normes, veuillez préciser dans les commentaires ci-dessous.
+            </p>
+          </div>
 
           <div className="mb-8 border border-blue-100 dark:border-blue-900/30 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl p-6">
             <div className="flex items-start gap-4 mb-4">
               <input 
                 type="checkbox" id="duoVoisin" checked={formData.isDuoVoisin}
                 onChange={e => setFormData({...formData, isDuoVoisin: e.target.checked})}
-                className="w-5 h-5 rounded text-altea-green focus:ring-altea-green mt-1 accent-altea-green cursor-pointer"
+                className="w-5 h-5 rounded text-altea-green mt-1 accent-altea-green cursor-pointer"
               />
               <div>
                 <label htmlFor="duoVoisin" className="font-bold text-gray-900 dark:text-white cursor-pointer block">
