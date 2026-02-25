@@ -1,6 +1,5 @@
 export type LawnType = 'jumele' | 'detache';
 export type ServiceType = 'tonte' | 'tonte_feuilles' | 'feuilles_only';
-export type LandCategory = 'standard' | 'grand_boise';
 
 export interface PricingTier {
   id: LawnType;
@@ -26,7 +25,6 @@ export interface BookingFormData {
   email: string;
   phone: string;
   lawnType: LawnType;
-  landCategory: LandCategory;
   serviceType: ServiceType;
   isDuoVoisin: boolean;
   neighborInfo?: NeighborInfo;
