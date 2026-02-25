@@ -24,7 +24,6 @@ const RadioCard: React.FC<RadioCardProps> = ({ checked, onChange, name, value, t
         value={value}
         checked={checked}
         onChange={onChange}
-        // Utilisation de accent-color pour teindre le bouton radio natif en vert
         className="w-5 h-5 mt-0.5 accent-altea-green cursor-pointer"
       />
       <div>
