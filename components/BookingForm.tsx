@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LawnType, ServiceType, BookingFormData } from '../types';
 import { CalendarCheck, Loader2, AlertCircle } from 'lucide-react';
 import emailjs from '@emailjs/browser';
-import RadioCard from './RadioCard'; // Import du nouveau composant
+import RadioCard from './RadioCard';
 
 interface BookingFormProps {
   initialLawnType: LawnType;
@@ -16,7 +16,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
     email: '',
     phone: '',
     lawnType: initialLawnType || 'jumele',
-    landCategory: 'standard', // Conservé pour la compatibilité des types
     serviceType: initialServiceType || 'tonte',
     isDuoVoisin: false,
     neighborInfo: {
@@ -158,7 +157,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
 
         <form onSubmit={handleSubmit} className="bg-white dark:bg-[#1A1A1A] p-8 md:p-10 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800">
           
-          {/* Infos Client */}
           <div className="grid md:grid-cols-2 gap-6 mb-6">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Nom complet</label>
@@ -200,7 +198,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
             />
           </div>
 
-          {/* Type de propriété (Utilisation de RadioCard) */}
           <div className="mb-8">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block">Type de propriété</label>
             <div className="grid md:grid-cols-2 gap-4">
@@ -221,7 +218,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
             </div>
           </div>
 
-          {/* Choix du forfait (Utilisation de RadioCard) */}
           <div className="mb-2">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 block">Choix du forfait</label>
             <div className="space-y-3">
@@ -252,10 +248,9 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
           </div>
           
           <p className="text-xs text-gray-500 italic mb-8 text-center mt-3">
-            Pour les terrains boisés ou besoins hors-normes, veuillez préciser dans les commentaires.
+            Pour les terrains boisés ou besoins hors-normes, veuillez préciser dans les commentaires ci-dessous.
           </p>
 
-          {/* Section Duo Voisin */}
           <div className="mb-8 border border-blue-100 dark:border-blue-900/30 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl p-6">
             <div className="flex items-start gap-4 mb-4">
               <input 
