@@ -30,6 +30,48 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{phone?: string, address?: string}>({});
+
+  const formatPhoneNumber = (value: string) => {
+    if (!value) return value;
+    let phoneNumber = value.replace(/[^\d]/g, '');
+    if (phoneNumber.length === 11 && phoneNumber.startsWith('1')) {
+      phoneNumber = phoneNumber.slice(1);
+    }
+    const phoneNumberLength = phoneNumber.length;
+    if (phoneNumberLength < 4) return phoneNumber;
+    if (phoneNumberLength < 7) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    }
+    return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+  };
+
+  const formatAddress = (value: string) => {
+    return value.replace(/\s+/g, ' ').trim();
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setFormData({ ...formData, phone: formatted });
+    if (errors.phone) setErrors({ ...errors, phone: undefined });
+  };
+
+  const handlePhoneBlur = () => {
+    const digits = formData.phone.replace(/\D/g, '');
+    if (digits.length > 0 && digits.length < 10) {
+      setErrors(prev => ({ ...prev, phone: 'Le numéro doit contenir 10 chiffres.' }));
+    }
+  };
+
+  const handleAddressBlur = () => {
+    const cleaned = formatAddress(formData.address);
+    setFormData(prev => ({ ...prev, address: cleaned }));
+    if (cleaned.length > 0 && cleaned.length < 5) {
+      setErrors(prev => ({ ...prev, address: 'Veuillez entrer une adresse plus précise.' }));
+    } else {
+      setErrors(prev => ({ ...prev, address: undefined }));
+    }
+  };
 
   useEffect(() => {
     setFormData(prev => ({
@@ -51,6 +93,13 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const digits = formData.phone.replace(/\D/g, '');
+    if (digits.length < 10) {
+      setErrors(prev => ({ ...prev, phone: 'Le numéro doit contenir 10 chiffres.' }));
+      return;
+    }
+    
     setIsSubmitting(true);
     setErrorMsg(null);
 
@@ -169,10 +218,12 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
               <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Téléphone</label>
               <input 
                 type="tel" required value={formData.phone}
-                onChange={e => setFormData({...formData, phone: e.target.value})}
-                className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none focus:border-altea-green focus:ring-1 focus:ring-altea-green transition-all"
+                onChange={handlePhoneChange}
+                onBlur={handlePhoneBlur}
+                className={`w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border ${errors.phone ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:border-altea-green focus:ring-altea-green'} text-gray-900 dark:text-white outline-none focus:ring-1 transition-all`}
                 placeholder="(418) 555-0123"
               />
+              {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
             </div>
           </div>
 
@@ -180,10 +231,15 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Adresse de service</label>
             <input 
               type="text" required value={formData.address}
-              onChange={e => setFormData({...formData, address: e.target.value})}
-              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white outline-none focus:border-altea-green focus:ring-1 focus:ring-altea-green transition-all"
-              placeholder="123 Rue des Érables, Québec"
+              onChange={e => {
+                setFormData({...formData, address: e.target.value});
+                if (errors.address) setErrors({ ...errors, address: undefined });
+              }}
+              onBlur={handleAddressBlur}
+              className={`w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#111] border ${errors.address ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-700 focus:border-altea-green focus:ring-altea-green'} text-gray-900 dark:text-white outline-none focus:ring-1 transition-all`}
+              placeholder="123 Rue des Érables, Québec, QC, G1A 1A1"
             />
+            {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
           </div>
 
           <div className="space-y-2 mb-8">
@@ -287,13 +343,14 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
                   placeholder="Adresse du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.address}
                   onChange={e => handleNeighborChange('address', e.target.value)}
+                  onBlur={() => handleNeighborChange('address', formatAddress(formData.neighborInfo?.address || ''))}
                   className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-altea-green focus:ring-1 focus:ring-altea-green"
                 />
                 <input 
                   type="tel"
                   placeholder="Téléphone du voisin" required={formData.isDuoVoisin}
                   value={formData.neighborInfo?.phone}
-                  onChange={e => handleNeighborChange('phone', e.target.value)}
+                  onChange={e => handleNeighborChange('phone', formatPhoneNumber(e.target.value))}
                   className="px-4 py-3 rounded-lg bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-altea-green focus:ring-1 focus:ring-altea-green"
                 />
                 <input 
