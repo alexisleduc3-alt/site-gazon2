@@ -26,6 +26,14 @@ const Pricing: React.FC<PricingProps> = ({ onSelectPlan }) => {
     return Math.round(totalSeason / visits);
   };
 
+  const applyDiscount = (price: number, isEarlyBird: boolean) => {
+    return isEarlyBird ? price * 0.9 : price;
+  };
+
+  const formatPrice = (price: number) => {
+    return price % 1 === 0 ? price : price.toFixed(2);
+  };
+
   return (
     <section id="pricing" className="py-24 bg-white dark:bg-[#111111] transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6">
@@ -44,7 +52,7 @@ const Pricing: React.FC<PricingProps> = ({ onSelectPlan }) => {
         <div className="flex justify-center mb-12">
           <div 
             onClick={() => setIsEarlyBird(!isEarlyBird)}
-            className="bg-gray-100 dark:bg-gray-800 p-1.5 rounded-full cursor-pointer flex items-center relative transition-all duration-300 border border-gray-200 dark:border-gray-700 hover:border-altea-green/50"
+            className="liquid-glass-card p-1.5 rounded-full cursor-pointer flex items-center relative transition-all duration-300 hover:border-altea-green/50"
           >
             <div className={`
               px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 z-10
@@ -75,22 +83,22 @@ const Pricing: React.FC<PricingProps> = ({ onSelectPlan }) => {
             const hasLeaves = selectedLeaves[tier.id];
             
             // Calculate base monthly price with discount if active
-            const baseMonthly = isEarlyBird ? tier.monthlyPrice * 0.9 : tier.monthlyPrice;
-            const leafPrice = isEarlyBird ? tier.leafOptionPrice * 0.9 : tier.leafOptionPrice;
+            const baseMonthly = applyDiscount(tier.monthlyPrice, isEarlyBird);
+            const leafPrice = applyDiscount(tier.leafOptionPrice, isEarlyBird);
             
             const totalPrice = baseMonthly + (hasLeaves ? leafPrice : 0);
             
             // Formatting
-            const displayPrice = totalPrice % 1 === 0 ? totalPrice : totalPrice.toFixed(2);
+            const displayPrice = formatPrice(totalPrice);
             const perVisitPrice = calculatePerVisit(baseMonthly);
 
             return (
               <div 
                 key={tier.id} 
-                className={`relative group rounded-2xl p-8 transition-all duration-300 border-2 flex flex-col
-                  bg-gray-50 dark:bg-[#1A1A1A] 
-                  border-transparent hover:border-altea-green/30 dark:hover:border-altea-green/30
-                  shadow-lg hover:shadow-2xl hover:-translate-y-1
+                className={`relative group rounded-3xl p-8 transition-all duration-300 flex flex-col
+                  liquid-glass-card
+                  hover:border-altea-green/30 dark:hover:border-altea-green/30
+                  hover:shadow-2xl hover:-translate-y-1
                 `}
               >
                 <div className="mb-6">
@@ -98,7 +106,7 @@ const Pricing: React.FC<PricingProps> = ({ onSelectPlan }) => {
                   <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">{tier.subtitle}</p>
                 </div>
 
-                <div className="mb-8 p-6 bg-white dark:bg-[#111] rounded-xl border border-gray-100 dark:border-gray-800">
+                <div className="mb-8 p-6 bg-white/50 dark:bg-black/20 backdrop-blur-md rounded-2xl border border-white/40 dark:border-white/5">
                   <div className="flex items-baseline gap-1 mb-2">
                     <span className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
                       {displayPrice}$
@@ -126,10 +134,10 @@ const Pricing: React.FC<PricingProps> = ({ onSelectPlan }) => {
                   {/* Leaf Option Toggle (Add-on) */}
                   <div 
                     onClick={() => toggleLeaves(tier.id)}
-                    className={`mt-6 p-4 rounded-lg cursor-pointer border transition-all duration-200 flex flex-col gap-2 select-none
+                    className={`mt-6 p-4 rounded-xl cursor-pointer border transition-all duration-200 flex flex-col gap-2 select-none
                       ${hasLeaves 
                         ? 'bg-altea-green/10 border-altea-green dark:bg-altea-green/20' 
-                        : 'bg-white dark:bg-[#111] border-gray-200 dark:border-gray-700 hover:border-gray-400'}
+                        : 'bg-white/40 dark:bg-black/20 border-white/40 dark:border-white/5 hover:border-gray-400 dark:hover:border-gray-600'}
                     `}
                   >
                     <div className="flex items-center gap-3">
@@ -152,7 +160,7 @@ const Pricing: React.FC<PricingProps> = ({ onSelectPlan }) => {
                         Deux passages inclus entre mi-octobre et mi-novembre, selon la météo.
                        </p>
                        <p className="text-xs font-semibold text-altea-green">
-                        +{leafPrice % 1 === 0 ? leafPrice : leafPrice.toFixed(2)}$/mois
+                        +{formatPrice(leafPrice)}$/mois
                        </p>
                     </div>
                   </div>
@@ -171,7 +179,7 @@ const Pricing: React.FC<PricingProps> = ({ onSelectPlan }) => {
 
         {/* Standalone Leaf Removal Section */}
         <div className="max-w-4xl mx-auto mb-12">
-          <div className="bg-gray-50 dark:bg-[#1A1A1A] rounded-2xl p-8 border border-gray-100 dark:border-gray-800 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="liquid-glass-card rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                  <div className="bg-orange-500/10 p-2 rounded-lg">
@@ -185,13 +193,13 @@ const Pricing: React.FC<PricingProps> = ({ onSelectPlan }) => {
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
                 <div>
                   <span className="block text-xs text-gray-400 uppercase tracking-wider">Jumelé / Ville</span>
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">275$</span>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">{formatPrice(applyDiscount(275, isEarlyBird))}$</span>
                   <span className="text-xs text-gray-500"> / saison</span>
                 </div>
                 <div className="hidden sm:block w-px bg-gray-200 dark:bg-gray-700"></div>
                 <div>
                   <span className="block text-xs text-gray-400 uppercase tracking-wider">Détaché / Banlieue</span>
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">350$</span>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">{formatPrice(applyDiscount(350, isEarlyBird))}$</span>
                   <span className="text-xs text-gray-500"> / saison</span>
                 </div>
               </div>
@@ -208,7 +216,7 @@ const Pricing: React.FC<PricingProps> = ({ onSelectPlan }) => {
         </div>
 
         {/* Mandatory Disclaimer */}
-        <div className="max-w-3xl mx-auto text-center flex items-start justify-center gap-2 text-sm text-gray-500 dark:text-gray-500 bg-gray-50 dark:bg-[#151515] p-4 rounded-lg border border-gray-100 dark:border-gray-800">
+        <div className="max-w-3xl mx-auto text-center flex items-start justify-center gap-2 text-sm text-gray-500 dark:text-gray-400 liquid-glass-input p-4 rounded-xl">
           <Info size={16} className="mt-0.5 flex-shrink-0" />
           <p>
             Les prix affichés s’appliquent aux terrains standards.<br className="hidden sm:block"/>
