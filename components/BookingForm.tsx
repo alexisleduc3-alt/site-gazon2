@@ -31,6 +31,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [errors, setErrors] = useState<{phone?: string, address?: string}>({});
+  const [clientEmailSent, setClientEmailSent] = useState(false);
 
   const formatPhoneNumber = (value: string) => {
     if (!value) return value;
@@ -107,7 +108,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
     const SERVICE_ID = 'service_1sjow9s';
     const PUBLIC_KEY = 'u6N8LATJ1y9hnE259';
     const TEMPLATE_ID_ADMIN = 'template_59eay7o'; 
-    const TEMPLATE_ID_CLIENT = 'template_ahcjxw9'; 
+    const TEMPLATE_ID_CLIENT = 'template_flskrrmg'; 
 
     // Traduction propre pour l'affichage dans le mail et Excel
     const lawnTypeDisplay = formData.lawnType === 'detache' ? 'Maison Détachée' : 'Maison de Ville / Jumelé';
@@ -132,6 +133,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
       to_name: "Admin Altea",
       client_name: formData.name,
       client_email: formData.email,
+      email: formData.email,
       client_phone: formData.phone,
       client_address: formData.address,
       
@@ -140,6 +142,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
       excel_lines: excelLines, 
       
       is_duo: formData.isDuoVoisin ? 'OUI' : 'NON', 
+      is_duo_bool: formData.isDuoVoisin,
       v_nom: formData.isDuoVoisin ? formData.neighborInfo?.name : 'N/A',
       v_adr: formData.isDuoVoisin ? formData.neighborInfo?.address : 'N/A',
       v_tel: formData.isDuoVoisin ? formData.neighborInfo?.phone : 'N/A',
@@ -149,8 +152,18 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
     };
 
     try {
+      // Envoi du courriel à l'administrateur (le plus important)
       await emailjs.send(SERVICE_ID, TEMPLATE_ID_ADMIN, templateParams, PUBLIC_KEY);
-      await emailjs.send(SERVICE_ID, TEMPLATE_ID_CLIENT, templateParams, PUBLIC_KEY);
+      
+      // Envoi du courriel de confirmation au client (non bloquant si erreur)
+      try {
+        await emailjs.send(SERVICE_ID, TEMPLATE_ID_CLIENT, templateParams, PUBLIC_KEY);
+        setClientEmailSent(true);
+      } catch (clientError) {
+        console.warn('Erreur lors de l\'envoi du courriel client (non bloquant):', clientError);
+        setClientEmailSent(false);
+      }
+      
       setIsSuccess(true);
     } catch (error) {
       console.error('Erreur EmailJS:', error);
@@ -169,8 +182,16 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
           </div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Demande Reçue !</h2>
           <p className="text-gray-600 dark:text-gray-300 text-lg">
-            Merci {formData.name}. Un courriel de confirmation vous a été envoyé à <strong>{formData.email}</strong>.<br/>
-            On se reparle sous 24h pour votre soumission officielle !
+            {clientEmailSent ? (
+              <>
+                Merci {formData.name}. Un courriel de confirmation vous a été envoyé à <strong>{formData.email}</strong>.<br/>
+                On se reparle sous 24h pour votre soumission officielle !
+              </>
+            ) : (
+              <>
+                Demande reçue. Si vous ne recevez pas de courriel de confirmation, ne vous inquiétez pas — on vous contacte sous 24h.
+              </>
+            )}
           </p>
           <button 
             onClick={() => {
