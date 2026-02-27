@@ -31,7 +31,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [errors, setErrors] = useState<{phone?: string, address?: string}>({});
-  const [clientEmailSent, setClientEmailSent] = useState(false);
 
   const formatPhoneNumber = (value: string) => {
     if (!value) return value;
@@ -108,7 +107,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
     const SERVICE_ID = 'service_1sjow9s';
     const PUBLIC_KEY = 'u6N8LATJ1y9hnE259';
     const TEMPLATE_ID_ADMIN = 'template_59eay7o'; 
-    const TEMPLATE_ID_CLIENT = 'template_flskrrmg'; 
 
     // Traduction propre pour l'affichage dans le mail et Excel
     const lawnTypeDisplay = formData.lawnType === 'detache' ? 'Maison Détachée' : 'Maison de Ville / Jumelé';
@@ -152,17 +150,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
     };
 
     try {
-      // Envoi du courriel à l'administrateur (le plus important)
+      // Envoi du courriel à l'administrateur
       await emailjs.send(SERVICE_ID, TEMPLATE_ID_ADMIN, templateParams, PUBLIC_KEY);
-      
-      // Envoi du courriel de confirmation au client (non bloquant si erreur)
-      try {
-        await emailjs.send(SERVICE_ID, TEMPLATE_ID_CLIENT, templateParams, PUBLIC_KEY);
-        setClientEmailSent(true);
-      } catch (clientError) {
-        console.warn('Erreur lors de l\'envoi du courriel client (non bloquant):', clientError);
-        setClientEmailSent(false);
-      }
       
       setIsSuccess(true);
     } catch (error) {
@@ -182,16 +171,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ initialLawnType, initialServi
           </div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Demande Reçue !</h2>
           <p className="text-gray-600 dark:text-gray-300 text-lg">
-            {clientEmailSent ? (
-              <>
-                Merci {formData.name}. Un courriel de confirmation vous a été envoyé à <strong>{formData.email}</strong>.<br/>
-                On se reparle sous 24h pour votre soumission officielle !
-              </>
-            ) : (
-              <>
-                Demande reçue. Si vous ne recevez pas de courriel de confirmation, ne vous inquiétez pas — on vous contacte sous 24h.
-              </>
-            )}
+            Merci {formData.name} ! Votre demande a été reçue.<br/>
+            Nous vous contacterons sous 24 à 48 heures pour confirmer et vous envoyer votre soumission officielle.
           </p>
           <button 
             onClick={() => {
