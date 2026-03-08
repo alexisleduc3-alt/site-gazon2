@@ -61,7 +61,7 @@ const App: React.FC = () => {
           </h1>
           
           <p className="text-lg md:text-2xl text-gray-100 mb-12 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-lg">
-            Un terrain impeccable sans lever le petit doigt. Nos équipes professionnelles s'occupent de tout pour que vous profitiez de votre été.
+            Un terrain impeccable sans lever le petit doigt. Votre expert s'occupe de tout pour que vous profitiez pleinement de votre été.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
@@ -74,7 +74,7 @@ const App: React.FC = () => {
             </button>
             <button 
               onClick={() => document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })}
-              className="w-full sm:w-auto bg-white/10 backdrop-blur-xl border border-white/30 text-white hover:bg-white/20 px-12 py-5 rounded-full font-black text-lg transition-all"
+              className="w-full sm:w-auto bg-white/10 backdrop-blur-2xl saturate-150 border border-white/30 text-white hover:bg-white/20 hover:border-white/50 px-12 py-5 rounded-full font-black text-lg transition-all shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
             >
               RÉSERVER MA PLACE
             </button>
