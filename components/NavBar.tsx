@@ -40,73 +40,76 @@ const NavBar: React.FC<NavBarProps> = ({ isDark, toggleTheme }) => {
       <nav 
         className={`w-full transition-all duration-300 ${
           isScrolled 
-            ? 'bg-white/70 dark:bg-[#111111]/70 backdrop-blur-2xl saturate-150 py-3 shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] border-b border-white/50 dark:border-white/10' 
-            : 'bg-transparent py-5 border-b border-transparent'
+            ? 'bg-white/90 dark:bg-[#111111]/90 backdrop-blur-2xl py-2 shadow-lg border-b border-white/10' 
+            : 'bg-transparent py-4'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 flex flex-wrap items-center justify-between gap-y-4">
-          {/* Logo & Brand */}
-          <div className="flex items-center gap-3 cursor-pointer group order-1" onClick={() => scrollToSection('hero')}>
-            <img 
-              src="/logo.png" 
-              alt="ALTEA Logo" 
-              className="h-8 md:h-10 w-auto object-contain"
-            />
-            <span className={`text-2xl font-black tracking-tighter ${isScrolled ? 'text-gray-900 dark:text-white' : 'text-white'}`}>
-              ALTEA
-            </span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          {/* Row 1: Logo and Toggles */}
+          <div className="flex items-center justify-between w-full">
+            {/* Logo & Brand */}
+            <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group" onClick={() => scrollToSection('hero')}>
+              <img 
+                src="/logo.png" 
+                alt="ALTEA Logo" 
+                className="h-7 sm:h-8 md:h-10 w-auto object-contain"
+              />
+              <span className={`text-xl sm:text-2xl font-black tracking-tighter transition-colors ${isScrolled ? 'text-gray-900 dark:text-white' : 'text-white'}`}>
+                ALTEA
+              </span>
+            </div>
+
+            {/* Liens Desktop */}
+            <div className="hidden md:flex items-center gap-8">
+              {['pricing', 'promos', 'footer'].map((id) => (
+                <button 
+                  key={id}
+                  onClick={() => scrollToSection(id)}
+                  className={`text-sm font-bold tracking-wide transition-colors ${
+                    isScrolled ? 'text-gray-700 dark:text-gray-200 hover:text-altea-green' : 'text-white hover:text-altea-green'
+                  }`}
+                >
+                  {id === 'pricing' ? 'TARIFS' : id === 'promos' ? 'PROMOS' : 'CONTACT'}
+                </button>
+              ))}
+              
+              <button 
+                onClick={() => scrollToSection('booking')}
+                className="bg-altea-green hover:bg-altea-greenDark text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-lg"
+              >
+                RÉSERVER
+              </button>
+
+              <button onClick={toggleTheme} className={`p-2 rounded-full ${isScrolled ? 'text-gray-800' : 'text-white'}`}>
+                {isDark ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+            </div>
+            
+             {/* Mobile Toggles */}
+            <div className="flex md:hidden items-center gap-2">
+              <button onClick={toggleTheme} className={`p-2 rounded-full transition-colors ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}`}>
+                 {isDark ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className={`p-2 transition-colors ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}`}>
+                {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+              </button>
+            </div>
           </div>
 
-          {/* 5-Star Badge - Responsive Wrap */}
-          <div className="order-3 w-full min-[380px]:w-auto min-[380px]:order-2 flex justify-center items-center gap-2">
+          {/* Row 2: 5-Star Badge (Mobile Only) */}
+          <div className="flex md:hidden justify-center items-center gap-2 mt-3 pb-1">
             <div className="flex items-center gap-0.5">
               {[1,2,3,4,5].map(i => (
-                <Star key={i} size={14} className="text-altea-green fill-altea-green drop-shadow-sm" />
+                <Star key={i} size={12} className="text-altea-green fill-altea-green drop-shadow-sm" />
               ))}
             </div>
-            <span className={`text-[10px] font-black tracking-widest uppercase px-3 py-1 rounded-full border backdrop-blur-md transition-colors duration-300 ${
+            <span className={`text-[9px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-full border backdrop-blur-md transition-all duration-300 ${
               isScrolled 
                 ? 'text-gray-700 dark:text-gray-200 border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/5' 
                 : 'text-white border-white/20 bg-black/20'
             }`}>
               Service 5 Étoiles au Québec
             </span>
-          </div>
-
-          {/* Liens Desktop */}
-          <div className="hidden md:flex items-center gap-8 order-3">
-            {['pricing', 'promos', 'footer'].map((id) => (
-              <button 
-                key={id}
-                onClick={() => scrollToSection(id)}
-                className={`text-sm font-bold tracking-wide transition-colors ${
-                  isScrolled ? 'text-gray-700 dark:text-gray-200 hover:text-altea-green' : 'text-white hover:text-altea-green'
-                }`}
-              >
-                {id === 'pricing' ? 'TARIFS' : id === 'promos' ? 'PROMOS' : 'CONTACT'}
-              </button>
-            ))}
-            
-            <button 
-              onClick={() => scrollToSection('booking')}
-              className="bg-altea-green hover:bg-altea-greenDark text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-lg"
-            >
-              RÉSERVER
-            </button>
-
-            <button onClick={toggleTheme} className={`p-2 rounded-full ${isScrolled ? 'text-gray-800' : 'text-white'}`}>
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-          </div>
-          
-           {/* Mobile Toggle */}
-          <div className="flex md:hidden items-center gap-4 order-2 min-[380px]:order-3">
-            <button onClick={toggleTheme} className={`p-2 rounded-full ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}`}>
-               {isDark ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className={`p-2 ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}`}>
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
           </div>
         </div>
         
