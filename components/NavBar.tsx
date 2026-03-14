@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Moon, Sun, Menu, X } from 'lucide-react';
+import { Moon, Sun, Menu, X, Star } from 'lucide-react';
 
 interface NavBarProps {
   isDark: boolean;
@@ -40,13 +40,13 @@ const NavBar: React.FC<NavBarProps> = ({ isDark, toggleTheme }) => {
       <nav 
         className={`w-full transition-all duration-300 ${
           isScrolled 
-            ? 'bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md py-3 shadow-md border-b border-gray-100' 
-            : 'bg-transparent py-5'
+            ? 'bg-white/70 dark:bg-[#111111]/70 backdrop-blur-2xl saturate-150 py-3 shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] border-b border-white/50 dark:border-white/10' 
+            : 'bg-transparent py-5 border-b border-transparent'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-6 flex flex-wrap items-center justify-between gap-y-4">
           {/* Logo & Brand */}
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => scrollToSection('hero')}>
+          <div className="flex items-center gap-3 cursor-pointer group order-1" onClick={() => scrollToSection('hero')}>
             <img 
               src="/logo.png" 
               alt="ALTEA Logo" 
@@ -57,8 +57,24 @@ const NavBar: React.FC<NavBarProps> = ({ isDark, toggleTheme }) => {
             </span>
           </div>
 
+          {/* 5-Star Badge - Responsive Wrap */}
+          <div className="order-3 w-full min-[380px]:w-auto min-[380px]:order-2 flex justify-center items-center gap-2">
+            <div className="flex items-center gap-0.5">
+              {[1,2,3,4,5].map(i => (
+                <Star key={i} size={14} className="text-altea-green fill-altea-green drop-shadow-sm" />
+              ))}
+            </div>
+            <span className={`text-[10px] font-black tracking-widest uppercase px-3 py-1 rounded-full border backdrop-blur-md transition-colors duration-300 ${
+              isScrolled 
+                ? 'text-gray-700 dark:text-gray-200 border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/5' 
+                : 'text-white border-white/20 bg-black/20'
+            }`}>
+              Service 5 Étoiles au Québec
+            </span>
+          </div>
+
           {/* Liens Desktop */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-8 order-3">
             {['pricing', 'promos', 'footer'].map((id) => (
               <button 
                 key={id}
@@ -84,7 +100,7 @@ const NavBar: React.FC<NavBarProps> = ({ isDark, toggleTheme }) => {
           </div>
           
            {/* Mobile Toggle */}
-          <div className="flex md:hidden items-center gap-4">
+          <div className="flex md:hidden items-center gap-4 order-2 min-[380px]:order-3">
             <button onClick={toggleTheme} className={`p-2 rounded-full ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}`}>
                {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
@@ -96,7 +112,7 @@ const NavBar: React.FC<NavBarProps> = ({ isDark, toggleTheme }) => {
         
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="absolute top-full left-0 right-0 bg-white dark:bg-[#1A1A1A] border-t dark:border-gray-800 shadow-xl p-6 flex flex-col gap-6 md:hidden">
+          <div className="absolute top-full left-0 right-0 liquid-glass-card border-t-0 rounded-b-2xl p-6 flex flex-col gap-6 md:hidden mx-4 mt-2">
             {['pricing', 'promos', 'footer'].map((id) => (
               <button 
                 key={id}
