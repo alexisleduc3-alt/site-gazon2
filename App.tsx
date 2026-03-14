@@ -48,13 +48,6 @@ const App: React.FC = () => {
         </div>
 
         <div className="relative z-10 text-center max-w-5xl px-6">
-          <div className="flex items-center justify-center gap-1 mb-6">
-            {[1,2,3,4,5].map(i => <Star key={i} size={18} className="text-altea-green fill-altea-green drop-shadow" />)}
-            <span className="text-white text-[10px] md:text-xs font-black ml-3 tracking-[0.2em] uppercase bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
-              Service 5 Étoiles au Québec
-            </span>
-          </div>
-          
           <h1 className="text-5xl md:text-8xl font-black text-white mb-8 tracking-tighter leading-[0.9] drop-shadow-2xl">
             Tonte de gazon.<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-altea-green to-emerald-300">Simplifiée.</span>
