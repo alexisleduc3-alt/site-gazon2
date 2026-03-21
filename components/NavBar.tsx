@@ -41,12 +41,12 @@ const NavBar: React.FC<NavBarProps> = ({ isDark, toggleTheme }) => {
         className={`w-full transition-all duration-300 ${
           isScrolled 
             ? 'bg-white/90 dark:bg-[#111111]/90 backdrop-blur-2xl py-2 shadow-lg border-b border-white/10' 
-            : 'bg-transparent py-4'
+            : 'bg-transparent py-2'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* Row 1: Logo and Toggles */}
-          <div className="flex items-center justify-between w-full">
+          <div className="flex items-center justify-between w-full h-12">
             {/* Logo & Brand */}
             <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group" onClick={() => scrollToSection('hero')}>
               <img 
@@ -97,7 +97,7 @@ const NavBar: React.FC<NavBarProps> = ({ isDark, toggleTheme }) => {
           </div>
 
           {/* Row 2: 5-Star Badge (Mobile Only) */}
-          <div className="flex md:hidden justify-center items-center gap-2 mt-3 pb-1">
+          <div className="flex md:hidden justify-center items-center gap-2 h-10 mt-2">
             <div className="flex items-center gap-0.5">
               {[1,2,3,4,5].map(i => (
                 <Star key={i} size={12} className="text-altea-green fill-altea-green drop-shadow-sm" />
@@ -115,22 +115,24 @@ const NavBar: React.FC<NavBarProps> = ({ isDark, toggleTheme }) => {
         
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="absolute top-full left-0 right-0 liquid-glass-card border-t-0 rounded-b-2xl p-6 flex flex-col gap-6 md:hidden mx-4 mt-2">
-            {['pricing', 'promos', 'footer'].map((id) => (
+          <div className="fixed inset-0 top-[144px] bg-white dark:bg-[#111111] p-8 flex flex-col gap-8 md:hidden z-[100] animate-fade-in overflow-y-auto">
+            <div className="flex flex-col gap-6">
+              {['pricing', 'promos', 'footer'].map((id) => (
+                <button 
+                  key={id}
+                  onClick={() => scrollToSection(id)}
+                  className="text-left text-2xl font-black tracking-tight text-gray-900 dark:text-white border-b border-gray-100 dark:border-white/5 pb-6"
+                >
+                  {id === 'pricing' ? 'Tarifs' : id === 'promos' ? 'Promos' : 'Contact'}
+                </button>
+              ))}
               <button 
-                key={id}
-                onClick={() => scrollToSection(id)}
-                className="text-left text-lg font-medium text-gray-900 dark:text-white"
+                onClick={() => scrollToSection('booking')}
+                className="bg-altea-green text-white py-5 rounded-2xl font-black text-xl text-center shadow-xl shadow-altea-green/20 mt-4"
               >
-                {id === 'pricing' ? 'Tarifs' : id === 'promos' ? 'Promos' : 'Contact'}
+                Réserver maintenant
               </button>
-            ))}
-            <button 
-              onClick={() => scrollToSection('booking')}
-              className="bg-altea-green text-white py-3 rounded-lg font-bold text-center"
-            >
-              Réserver maintenant
-            </button>
+            </div>
           </div>
         )}
       </nav>
