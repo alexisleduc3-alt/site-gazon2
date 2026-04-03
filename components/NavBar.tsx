@@ -11,6 +11,17 @@ const NavBar: React.FC<NavBarProps> = ({ isDark, toggleTheme }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
@@ -32,15 +43,15 @@ const NavBar: React.FC<NavBarProps> = ({ isDark, toggleTheme }) => {
   return (
     <header className="fixed top-0 z-50 w-full">
       {/* 1. Bannière d'offre */}
-      <div className="bg-emerald-900 text-white text-center py-2 px-4 text-xs md:text-sm font-semibold border-b border-white/10">
+      <div className="bg-emerald-900 text-white text-center py-2 px-4 text-xs md:text-sm font-semibold border-b border-white/10 relative z-50">
         OFFRE EXCLUSIVE : PROMO LÈVE-TÔT — <span className="text-altea-green font-bold">10% DE RABAIS</span> AVANT LE 15 AVRIL.
       </div>
 
       {/* 2. Navigation : Transparente en haut, blanche au scroll */}
       <nav 
-        className={`w-full transition-all duration-300 ${
-          isScrolled 
-            ? 'bg-white/90 dark:bg-[#111111]/90 backdrop-blur-2xl py-2 shadow-lg border-b border-white/10' 
+        className={`w-full transition-all duration-300 relative z-50 ${
+          mobileMenuOpen || isScrolled 
+            ? 'bg-white dark:bg-[#111111] py-2 shadow-lg border-b border-white/10' 
             : 'bg-transparent py-2'
         }`}
       >
@@ -54,7 +65,7 @@ const NavBar: React.FC<NavBarProps> = ({ isDark, toggleTheme }) => {
                 alt="ALTEA Logo" 
                 className="h-7 sm:h-8 md:h-10 w-auto object-contain"
               />
-              <span className={`text-xl sm:text-2xl font-black tracking-tighter transition-colors ${isScrolled ? 'text-gray-900 dark:text-white' : 'text-white'}`}>
+              <span className={`text-xl sm:text-2xl font-black tracking-tighter transition-colors ${isScrolled || mobileMenuOpen ? 'text-gray-900 dark:text-white' : 'text-white'}`}>
                 ALTEA
               </span>
             </div>
@@ -87,10 +98,10 @@ const NavBar: React.FC<NavBarProps> = ({ isDark, toggleTheme }) => {
             
              {/* Mobile Toggles */}
             <div className="flex md:hidden items-center gap-2">
-              <button onClick={toggleTheme} className={`p-2 rounded-full transition-colors ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}`}>
+              <button onClick={toggleTheme} className={`p-2 rounded-full transition-colors ${isScrolled || mobileMenuOpen ? 'text-gray-800 dark:text-white' : 'text-white'}`}>
                  {isDark ? <Sun size={18} /> : <Moon size={18} />}
               </button>
-              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className={`p-2 transition-colors ${isScrolled ? 'text-gray-800 dark:text-white' : 'text-white'}`}>
+              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className={`p-2 transition-colors ${isScrolled || mobileMenuOpen ? 'text-gray-800 dark:text-white' : 'text-white'}`}>
                 {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
               </button>
             </div>
@@ -112,30 +123,30 @@ const NavBar: React.FC<NavBarProps> = ({ isDark, toggleTheme }) => {
             </span>
           </div>
         </div>
-        
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 top-[144px] bg-white dark:bg-[#111111] p-8 flex flex-col gap-8 md:hidden z-[100] animate-fade-in overflow-y-auto">
-            <div className="flex flex-col gap-6">
-              {['pricing', 'promos', 'footer'].map((id) => (
-                <button 
-                  key={id}
-                  onClick={() => scrollToSection(id)}
-                  className="text-left text-2xl font-black tracking-tight text-gray-900 dark:text-white border-b border-gray-100 dark:border-white/5 pb-6"
-                >
-                  {id === 'pricing' ? 'Tarifs' : id === 'promos' ? 'Promos' : 'Contact'}
-                </button>
-              ))}
-              <button 
-                onClick={() => scrollToSection('booking')}
-                className="bg-altea-green text-white py-5 rounded-2xl font-black text-xl text-center shadow-xl shadow-altea-green/20 mt-4"
-              >
-                Réserver maintenant
-              </button>
-            </div>
-          </div>
-        )}
       </nav>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 bg-white dark:bg-[#111111] p-8 flex flex-col md:hidden z-40 animate-fade-in overflow-y-auto pt-[180px] h-screen">
+          <div className="flex flex-col gap-6">
+            {['pricing', 'promos', 'footer'].map((id) => (
+              <button 
+                key={id}
+                onClick={() => scrollToSection(id)}
+                className="text-left text-2xl font-black tracking-tight text-gray-900 dark:text-white border-b border-gray-100 dark:border-white/5 pb-6"
+              >
+                {id === 'pricing' ? 'Tarifs' : id === 'promos' ? 'Promos' : 'Contact'}
+              </button>
+            ))}
+            <button 
+              onClick={() => scrollToSection('booking')}
+              className="bg-altea-green text-white py-5 rounded-2xl font-black text-xl text-center shadow-xl shadow-altea-green/20 mt-4"
+            >
+              Réserver maintenant
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
